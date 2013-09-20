@@ -1,0 +1,57 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="generator" content="<%= Pluto.banner %>">
+
+  <title><%= site['title'] %></title>
+
+  <link rel="stylesheet" type="text/css" href="news.css">
+
+</head>
+<body>
+<h1><%= site['title'] %></h1>
+
+<div>
+<% last_published_at = Time.local( 1999, 1, 1 )
+   Item.latest.limit(24).each do |item| %>
+
+ <% unless last_published_at.year   == item.published_at.year  &&
+           last_published_at.month  == item.published_at.month &&
+           last_published_at.day    == item.published_at.day      %>
+     
+     
+             
+<h3>
+  <%= item.published_at.strftime('%A, %d. %B %Y') %>
+</h3>
+
+<% end %><!-- if new day? -->
+
+
+<div class='item'>
+
+<h4 class='feed_title'>
+  <a href='<%= item.feed.url %>'><%= item.feed.title %></a>
+</h4>
+
+<h2 class='item_title'>
+ <a href='<%= item.url %>'><%= item.title %></a>
+</h2>
+
+<div class='item_content'>
+<%= item.content %>
+</div>
+</div> 
+<!--
+<p>
+   <%= item.published_at.strftime('%H:%M') %>
+</p>
+-->
+
+<% last_published_at = item.published_at
+   end %><!-- each item -->
+
+</div>
+
+</body>
+</html>

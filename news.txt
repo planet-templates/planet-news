@@ -1,0 +1,5 @@
+# pakman manifest
+
+__file__.news.html  news.html.erb
+
+news.css
