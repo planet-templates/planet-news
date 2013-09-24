@@ -88,6 +88,9 @@
         <div class='item_content'>
          <%= item.summary %>
         </div>
+        <div>
+         <%= textify( item.summary ) %>
+        </div>
         <p class='item-time-ago-in-words'>
           <%= time_ago_in_words( item.published_at ) %>
         </p>
