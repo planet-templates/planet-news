@@ -6,41 +6,58 @@
 
   <title><%= site.title %></title>
 
-  <%= stylesheet_link_tag 'news' %>
+  <%= stylesheet_link_tag 'css/news' %>
+
+  <!-- fix: use script_tag  rails-style ??? -->
+  <script src='js/jquery-2.0.3.min.js'></script>
+  <script src='js/news.js'></script>
+
+  <%# = javascript_include_tag 'js/jquery-2.0.3.min.js' %>
+  <%# = javascript_include_tag 'js/news.js' %>
 
 </head>
 <body>
+
 <h1><%= site.title %></h1>
 
-<p>
-  [icon] Switch to full view /
-  [icon] Switch to compact view
-  
-  Updated
+<div class='stream' style='width: 800px;'>
+
+<table>
+ <tr>
+  <td>
+     <div style='width: 50px; max-width: 50px;'></div>
+  </td>
+  <td width='100%'>
+   <!-- 2st column; filler column -->
+  <img src='i/view-headlines.png' id='show-headlines'  title='Switch to headlines only view' width='16' height='16'>
+  <img src='i/view-snippets.png'  id='show-snippets'   title='Switch to snippet view'        width='16' height='16'>
+  <img src='i/view-standard.png'  id='show-fulltext'   title='Switch to full text view'      width='16' height='16'>
+  </td>
+  <td class='last-update' style='white-space: nowrap; text-align: right;'>
+   <!-- 3nd column -->
+    Updated
    <% if site.fetched %>
-      <%= site.fetched.strftime('%A, %d. %B %Y %H:%M') %>
+      <%= site.fetched.strftime('%A, %d %B %Y %H:%M') %>
    <% end %>
-  </p>
+  </td>
+ </tr>
+</table>
 
+<!--
+  todo: order first by date and than by feed and than by datetime
+    - lets us group all feed items of a feed group together
+ -->
 
-<div>
 <%
    items = site.items.latest.limit(24)
    ItemCursor.new( items ).each do |item, new_date, new_feed|
 %>
 
- <% if new_date %>
-     
-  <!--
-<h3>
-  <%= item.published.strftime('%A, %d. %B %Y') %>
-</h3>
-   -->
-<% end %><!-- if new day? -->
+<div class='section' style='width: 800px;'>
 
 
-<div class='section'>
-<div class='header' style='width: 800px;'>
+<% if new_feed %>
+<div class='header'>
   <table width='100%'>
    <tr>
      <td>
@@ -50,26 +67,33 @@
        <span class='feed-title'>
          <%= link_to item.feed.title, item.feed.url %>
         (
-         <a href=''>Feed</a>
+         <%= link_to 'Feed', item.feed.feed_url %>
         )
        </span>
      </td><!-- feed title -->
-     <td width='100%'>  <!-- note: width is a suggestion; will get smaller to fill space-->
-          <hr>
+     <% if new_date %>
+     <td width='100%'>
+          <hr class='filler'>
      </td><!-- filler -->
-     <td style='white-space: nowrap;'>
-       <span class='item-published'><%= item.published %></span>
-     </td><!-- item published -->
+      <td style='white-space: nowrap;'>
+       <span class='item-published'><%= item.published.strftime('%A, %d %B %Y') %></span>
+      </td><!-- item published -->
+     <% else %>
+     <td width='100%'>
+          <!-- note: width is a suggestion; will get smaller to fill space-->
+     </td>
+     <% end %>
    </tr>
   </table>
 </div>
+<% end %>
 
-<div class='item'>
+<div class='item' style='width: 800px;'>
 
 <table width='100%'>
   <tr>
     <td>
-                <div style='width: 50px; max-width: 50px;'></div>  
+       <div style='width: 50px; max-width: 50px;'></div>  
     </td><!-- icon/logo; dummy for space -->
     <td width='100%'>
         <span class='item-title'>
@@ -77,40 +101,75 @@
         </span>
     </td>
   </tr>
+
   <tr>
     <td>
-                <div style='width: 50px; max-width: 50px;'></div>  
+       <div style='width: 50px; max-width: 50px;'></div>
     </td><!-- icon/logo; dummy for space -->
     <td width='100%'>
-          <!-- fix:
-              use plain text  - no links etc. - no lists!!! just simple text
-              no headlines etc. no bold no em etc.
-              max. 400 or 500 ???
-            -->
-        <div class='item_content'>
-         <%= item.summary %>
-        </div>
-        <div>
-         <% if item.summary %>
-            <%= textify( item.summary ) %>
-          <% end %>
-        </div>
-        <p class='item-time-ago-in-words'>
-          <%= time_ago_in_words( item.published ) %>
-        </p>
+
+<div class='item-body'>
+
+<div class='item-snippet'>
+<!-- use 'smarter' algorithm for cutoff snippet text
+   note: summary goes first; than try content -->
+<% if item.summary %>
+  <%= textify( item.summary )[0..300] %>
+<% elsif item.content %>
+  <%= textify( item.content )[0..300] %>
+<% else %>
+  -/-
+<% end %>
+</div>
+
+<div class='item-content item-summary'>
+<!-- todo: use sanitize or simplify or whitelist
+   - todo/fix: check why summary can be nil/null
+   note: content goes first; than try summary
+ -->
+<% if item.content %>
+  <%= textify( item.content ) %>
+<% elsif item.summary %>
+  <%= textify( item.summary ) %>
+<% else %>
+  -/-
+<% end %>
+</div>
+
+<div class='item-footer'>
+  <%= item.published.strftime('%H:%M') %>  &bull;
+    <span class='item-time-ago-in-words'>
+       <%= time_ago_in_words( item.published ) %>
+    </span>
+</div>
+
+</div><!-- item-body -->
+
     </td>
   </tr>
 </table>
 
 </div>  <!-- item -->
-
-
-</div><!-- section -->
+</div> <!-- section -->
 
 
 <% end %><!-- each item -->
 
+
+<div class='header'>
+<table width='100%'>
+  <tr>
+    <td>
+       <div style='width: 50px; max-width: 50px;'></div>  
+    </td>
+    <td width='100%'>
+       <hr class='item-separator'>
+    </td>
+  </tr>
+</table>
 </div>
+
+</div> <!-- stream -->
 
 </body>
 </html>
